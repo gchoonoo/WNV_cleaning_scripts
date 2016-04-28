@@ -72,6 +72,7 @@ http://church.ohsu.edu:3838/mooneymi/wnv_histology_lineplots/
 ### Specific Weight Data Corrections / Modifications
 
 Gale Lab
+
 1. For line 18, UWID 3.13M changed to 3.12M (RIX_ID 62)
 2. For line 95, animal 23, D8 weight changed from 27.74 to 24.74
 3. For line 100, changed D2 RIX_IDs from 1 to 7, 2 to 15, and 3 to 20
@@ -81,6 +82,7 @@ Gale Lab
 7. Remove line 51
 
 Lund Lab
+
 1. For line 63, typos fixed for animal 73
 2. For line 55, typos fixed for animals 122 and 133
 3. For line 8, d7 animal RIX_ID changed from 174 to 171

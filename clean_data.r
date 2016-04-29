@@ -21,8 +21,12 @@ for(i in 1:length(dir("data"))){
   names(data2[[i]]) <- c("UW_Line","ID","Mating","RIX_ID","Timepoint","Date_Infected","Death_Euthanized","Death_FoundInCage",days)
   
   data2[[i]][1:which(data2[[i]][,1] == "% of initial weight")-1,] -> data2[[i]]
-  
-  data = do.call(rbind,data2)      
+
+  new_lund_line = do.call(rbind,data2)      
+}
+
+if(length(unique(new_lund_line[,1])) == length(dir("data"))){
+  print(paste("Read in", length(dir("data")),"files"))
 }
 
 # Cleaning steps as outlined by Readme
@@ -31,7 +35,7 @@ for(i in 1:length(dir("data"))){
 clean_na = function(data_set){
   
   for (i in 1:dim(data_set)[2]){
-    print(i)
+    #print(i)
     if(sum(na.omit(data_set[,i] == "") > 0)){
       
       data_set[which( data_set[,i] == ""),i] <- NA
@@ -98,11 +102,11 @@ new_lund_line[na_now,] # Flag if no died early notes
 # 6. Annotate Death_date based on date of infection to timepoint or died early notes, annotate putative death day
 
 # Lund: Change Death_Euthanized and Death_FoundInCage to day instead of date
-new_lund_line[,"Death_Euthanized"] <- as.Date(new_lund_line[,"Death_Euthanized"], format="%m/%d/%y")
+new_lund_line[,"Death_Euthanized"] <- as.Date(new_lund_line[,"Death_Euthanized"], format="%m/%d/%y",origin="1900-01-01")
 
-new_lund_line[,"Death_FoundInCage"] <- as.Date(new_lund_line[,"Death_FoundInCage"], format="%m/%d/%y")
+new_lund_line[,"Death_FoundInCage"] <- as.Date(new_lund_line[,"Death_FoundInCage"], format="%m/%d/%y",origin="1900-01-01")
 
-new_lund_line[,"Date_Infected"] <- as.Date(new_lund_line[,"Date_Infected"], format="%m/%d/%y")
+new_lund_line[,"Date_Infected"] <- as.Date(new_lund_line[,"Date_Infected"], format="%m/%d/%y",origin="1900-01-01")
 
 new_lund_line[,"Death_FoundInCage"] <- as.vector(difftime(new_lund_line[,"Death_FoundInCage"],new_lund_line[,"Date_Infected"],units="days"))
 
@@ -120,7 +124,14 @@ new_lund_line[which(!is.na(new_lund_line[,"Death_FoundInCage"])),"Death_Date"] <
 new_lund_line[which(is.na(new_lund_line[,"Death_FoundInCage"]) & is.na(new_lund_line[,"Death_Euthanized"])),"Death_Date"] <- as.character(new_lund_line[which(is.na(new_lund_line[,"Death_FoundInCage"]) & is.na(new_lund_line[,"Death_Euthanized"])),"Date_Infected"]+new_lund_line[which(is.na(new_lund_line[,"Death_FoundInCage"]) & is.na(new_lund_line[,"Death_Euthanized"])),"Timepoint"])
 
 # annotate putative death day
-new_lund_line$putative_death_day <- sapply(1:dim(new_lund_line)[1],function(x)max(as.numeric(as.character(gsub("D","",names(new_lund_line[x,days][which(!is.na(new_lund_line[x,days]))]))))))
+new_lund_line$putative_death_day <- sapply(1:dim(new_lund_line)[1],function(x){
+  #print(x)
+  if(length(as.numeric(as.character(gsub("D","",names(new_lund_line[x,days][which(!is.na(new_lund_line[x,days]))]))))) ==0){
+    NA
+  }else{
+  max(as.numeric(as.character(gsub("D","",names(new_lund_line[x,days][which(!is.na(new_lund_line[x,days]))])))))
+  }
+})
 
 # Check if any still NA, annotate death date as date of infection to timepoint if the difference between the timepoint and putative death day is <= 3, otherwise this is flagged below
 new_lund_line[which(is.na(new_lund_line[,"Death_Date"])),]
@@ -137,15 +148,15 @@ new_lund_line[,"D0_Percentage"] <- 0
 
 # change weights to numeric
 for(i in days){
-  print(i)
+  #print(i)
   new_lund_line[,i] <- as.numeric(as.character(new_lund_line[,i]))
 }
 
 # calculate percentages
 for(i in days[-1]){
-  print(i)
+  #print(i)
   d2_p = sapply(1:dim(new_lund_line)[1],function(x){
-    print(x)
+    #print(x)
     (diff(c(new_lund_line[x,"D0"], new_lund_line[x,i]))/new_lund_line[x,"D0"])*100
   })
   
@@ -160,12 +171,12 @@ flag_weight_drop = sapply(1:dim(new_lund_line)[1],function(x)sum(new_lund_line[x
 new_lund_line$Flag_Weight_Drop = flag_weight_drop
 
 # 9. Add Flag_Identical_Weights (True if identical weights on consecutive measurements)
-identical_weights = sapply(1:dim(new_lund_line)[1],function(x)sum(diff(na.omit(as.numeric(as.character(new_lund_line[x,days_percent])))) == 0) > 0)
+identical_weights = sapply(1:dim(new_lund_line)[1],function(x)suppressWarnings(sum(diff(na.omit(as.numeric(as.character(new_lund_line[x,days_percent])))) == 0) > 0))
 
 new_lund_line$Flag_Identical_Weights = identical_weights
 
 # 10. Add Flag_Per_Day_Weight_Change (True if weight change > 10% on consecutive measurements)
-weight_change_flag = sapply(1:dim(new_lund_line)[1],function(x)sum(abs(diff(na.omit(as.numeric(as.character(new_lund_line[x,days_percent]))))) >= 10) > 0)
+weight_change_flag = sapply(1:dim(new_lund_line)[1],function(x)suppressWarnings(sum(abs(diff(na.omit(as.numeric(as.character(new_lund_line[x,days_percent]))))) >= 10) > 0))
 
 new_lund_line$Flag_Per_Day_Weight_Change = weight_change_flag
 
@@ -245,10 +256,10 @@ new_lund_line_v2$flags_checked = FALSE
 
 # clean date format
 lund_weight_full[,"Death_Date"] <- as.character(lund_weight_full[,"Death_Date"])
-lund_weight_full[,"Date_Infected"] <- as.Date(lund_weight_full[,"Date_Infected"],format="%Y-%m-%d")
+lund_weight_full[,"Date_Infected"] <- as.Date(lund_weight_full[,"Date_Infected"],format="%Y-%m-%d", origin="1900-01-01")
 
 new_lund_line_v2[,"Death_Date"] <- as.character(new_lund_line_v2[,"Death_Date"])
-new_lund_line_v2[,"Date_Infected"] <- as.Date(as.character(new_lund_line_v2[,"Date_Infected"]),format="%Y-%m-%d")
+new_lund_line_v2[,"Date_Infected"] <- as.Date(as.character(new_lund_line_v2[,"Date_Infected"]),format="%Y-%m-%d",origin="1900-01-01")
 
 # Merge new data and old data
 merge(lund_weight_full, new_lund_line_v2, by=intersect(names(new_lund_line_v2),names(lund_weight_full)), all=T) -> lund_weight_full_v2
@@ -269,3 +280,48 @@ write.table(file="./Lund_Weight_cleaned.txt", x=lund_weight_full_v2, sep="\t", q
 # 16. Make specific alterations listed in the Readme. 
 # Make any manual corrections needed
 # Note if you change weights, need to also re-calculate weight percentages. Record these changes in Data_Altered and Notes column
+
+# Example plot
+weight_time_plot = function(uw_lines, weight_cols=days_percent, Mocks=FALSE, ...) {
+  
+  y_weights = aggregate(lund_weight_full_v2[, weight_cols], list(lund_weight_full_v2$UW_Line, lund_weight_full_v2$Virus), mean, na.rm=T)
+  colnames(y_weights) = c('line','virus',weight_cols)
+  n_cols = floor(length(uw_lines)/3) + ceiling((length(uw_lines)%%3)/3)
+  xvals = c(0:28)
+  
+  if (Mocks) {
+    par(mfrow=c(2,1))
+    matplot(xvals, t(y_weights[y_weights[,1] %in% uw_lines & y_weights$virus=='Mock',weight_cols]), type="l", ylim=c(-30,30), ylab="Average % Weight Change", xlab="Day", main="Weight Change - Mocks", lty=1, lwd=4,xaxt='n',...)
+    
+    matplot(xvals, t(y_weights[y_weights[,1] %in% uw_lines & y_weights$virus=='Mock',weight_cols]), type="p", pch=19, ylim=c(-30,30), ylab="Average % Weight Change", xlab="Day", main="Weight Change - Mocks", add=T,xaxt='n',...)
+    
+    axis(side=1,at=xvals, labels=c(0:28))
+    
+    abline(h=0, col='black')
+    abline(h=-5, col='black', lty=2)
+    legend('topleft', legend=y_weights$line[y_weights$line %in% uw_lines & y_weights$virus=='WNV'], lty=1, lwd=10, ncol=n_cols,...)
+    
+    matplot(xvals, t(y_weights[y_weights[,1] %in% uw_lines & y_weights$virus=='WNV',weight_cols]), type="l", ylim=c(-30,30), ylab="Average % Weight Change", xlab="Day", main="Weight Change - WNV", lty=1, lwd=4,xaxt='n',...)
+    matplot(xvals, t(y_weights[y_weights[,1] %in% uw_lines & y_weights$virus=='WNV',weight_cols]), type="p", pch=19, ylim=c(-30,30), ylab="Average % Weight Change", xlab="Day", main="Weight Change - WNV", add=T,xaxt='n',...)
+    axis(side=1,at=xvals, labels=c(0:28))
+    abline(h=0, col='black')
+    abline(h=-5, col='black', lty=2)
+    
+    legend('topleft', legend=y_weights$line[y_weights$line %in% uw_lines & y_weights$virus=='WNV'], lty=1, lwd=10, ncol=n_cols,...)
+  } else {
+    matplot(xvals, t(y_weights[y_weights[,1] %in% uw_lines & y_weights$virus=='WNV',weight_cols]), type="l", ylim=c(-30,30), ylab="Average % Weight Change", xlab="Day", main="Weight Change - WNV", lty=1, lwd=4,xaxt='n', ...)
+    matplot(xvals, t(y_weights[y_weights[,1] %in% uw_lines & y_weights$virus=='WNV',weight_cols]), type="p", pch=19, ylim=c(-30,30), ylab="Average % Weight Change", xlab="Day", main="Weight Change - WNV", add=T,xaxt='n', ...)
+    axis(side=1,at=xvals, labels=c(0:32,45))
+    abline(h=0, col='black')
+    abline(h=-5, col='black', lty=2)
+    legend('topleft', legend=y_weights$line[y_weights$line %in% uw_lines & y_weights$virus=='WNV'], lty=1, lwd=10, ncol=n_cols, ...)
+  }
+}
+
+weight_time_plot(uw_lines=c("25","27","100","86","13"), weight_cols=days_percent,Mocks=T, col=sample(colors(),5))
+
+
+
+
+
+

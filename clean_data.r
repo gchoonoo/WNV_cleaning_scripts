@@ -7,50 +7,23 @@ library(gdata)
 # Gale: Read in weight sheet
 # Lund: Read in all weight sheets and combine
 # Lund Data Example:
-read.xls(xls="102 weights 3_21_16.xlsx", sheet=1, skip=2,colClasses=c("NULL",rep(NA,37)), stringsAsFactors=F) -> line_102
-read.xls(xls="101 weights 3_21_16.xlsx", sheet=1, skip=2,colClasses=c("NULL",rep(NA,37)), stringsAsFactors=F) -> line_101
-read.xls(xls="096 weights 3_21_16.xlsx", sheet=1, skip=2,colClasses=c("NULL",rep(NA,37)), stringsAsFactors=F) -> line_96
-read.xls(xls="108 weights 3_21_16.xlsx", sheet=1, skip=2,colClasses=c("NULL",rep(NA,37)), stringsAsFactors=F) -> line_108
-read.xls(xls="107 weights 3_21_16.xlsx", sheet=1, skip=2,colClasses=c("NULL",rep(NA,37)), stringsAsFactors=F) -> line_107
-read.xls(xls="100 weights 3_21_16.xlsx", sheet=1, skip=2,colClasses=c("NULL",rep(NA,37)), stringsAsFactors=F) -> line_100
-read.xls(xls="099 weights 3_21_16.xlsx", sheet=1, skip=2,colClasses=c("NULL",rep(NA,37)), stringsAsFactors=F) -> line_99
-read.xls(xls="106 weights 3_15_16.xlsx", sheet=1, skip=2,colClasses=c("NULL",rep(NA,37)), stringsAsFactors=F) -> line_106
-read.xls(xls="105 weights 3_15_16.xlsx", sheet=1, skip=2,colClasses=c("NULL",rep(NA,37)), stringsAsFactors=F) -> line_105
-read.xls(xls="061 weights 3_15_16.xlsx", sheet=1, skip=2,colClasses=c("NULL",rep(NA,37)), stringsAsFactors=F) -> line_61
-read.xls(xls="090 weights 3_15_16.xlsx", sheet=1, skip=2,colClasses=c("NULL",rep(NA,37)), stringsAsFactors=F) -> line_90
-read.xls(xls="089 weights 3_15_16.xlsx", sheet=1, skip=2,colClasses=c("NULL",rep(NA,37)), stringsAsFactors=F) -> line_89
-read.xls(xls="045 weights 11_5_15.xlsx", sheet=1, skip=2,colClasses=c("NULL",rep(NA,37)), stringsAsFactors=F) -> line_45
 
-# Clean days
-days = gsub("d","D",gsub("\\.","",names(line_102)[9:37]))
+# Set empty vector
+data2 <- vector("list",length(dir("data")))
 
-# Formatting function: removes percentages in second half of each file
-format_data = function(data){
+# Read in all new data and combine
+for(i in 1:length(dir("data"))){
+  #print(i)
+  read.xls(xls=paste("data",dir("data")[i],sep="/"), sheet=1, skip=2,colClasses=c("NULL",rep(NA,37)), stringsAsFactors=F) -> data2[[i]]
   
-  names(data) <- c("UW_Line","ID","Mating","RIX_ID","Timepoint","Date_Infected","Death_Euthanized","Death_FoundInCage",days)
+  days = gsub("d","D",gsub("\\.","",names(data2[[i]])[9:37]))
   
-  data[1:which(data[,1] == "% of initial weight")-1,] -> data
+  names(data2[[i]]) <- c("UW_Line","ID","Mating","RIX_ID","Timepoint","Date_Infected","Death_Euthanized","Death_FoundInCage",days)
   
-  return(data)
+  data2[[i]][1:which(data2[[i]][,1] == "% of initial weight")-1,] -> data2[[i]]
+  
+  data = do.call(rbind,data2)      
 }
-
-# Format all data
-format_data(line_102) -> lund1
-format_data(line_101) -> lund2
-format_data(line_96) -> lund3
-format_data(line_108) -> lund4
-format_data(line_107) -> lund5
-format_data(line_100) -> lund6
-format_data(line_99) -> lund7
-format_data(line_106) -> lund8
-format_data(line_105) -> lund9
-format_data(line_61) -> lund10
-format_data(line_90) -> lund11
-format_data(line_89) -> lund12
-format_data(line_45) -> lund13
-
-# Combine Data
-rbind(lund1, lund2, lund3, lund4, lund5, lund6, lund7, lund8, lund9, lund10, lund11, lund12, lund13) -> new_lund_line
 
 # Cleaning steps as outlined by Readme
 
@@ -252,48 +225,7 @@ if(length(as.vector(unlist(sapply(as.character(exp_id[,1]),function(x)which(x==a
 # Lund: Remove beginning 0 in UW_Line
 new_lund_line_v2[which(substring(new_lund_line_v2[,"UW_Line"],1,1) == "0"),"UW_Line"] <- substring(new_lund_line_v2[which(substring(new_lund_line_v2[,"UW_Line"],1,1) == "0"),"UW_Line"],2,nchar(new_lund_line_v2[which(substring(new_lund_line_v2[,"UW_Line"],1,1) == "0"),"UW_Line"]))
 
-# 15. Make any specific alterations listed in the Readme. Note if you change weights, need to also re-calculate weight percentages. Record these changes in Data_Altered and Notes column
-
-# Most of these are already saved in the old versions of the data, which is updated in the next step.
-
-new_lund_line_v2[which(new_lund_line_v2[,"UW_Line"] == 61 & new_lund_line_v2[,"Virus"] == "Mock" & new_lund_line_v2[,"Timepoint"] == 28),"Notes"] <- "Not receiving, line complete"
-
-new_lund_line_v2[which(new_lund_line_v2[,"UW_Line"] == 89 & new_lund_line_v2[,"Timepoint"] > 12 & new_lund_line_v2[,"Virus"] == "WNV"),"Notes"] <- "Jumpy, no weight"
-
-new_lund_line_v2[which(new_lund_line_v2[,"UW_Line"] == 90 & new_lund_line_v2[,"RIX_ID"] ==76),"Death_Euthanized"] <- "11"
-
-new_lund_line_v2[which(new_lund_line_v2[,"UW_Line"] == 90 & new_lund_line_v2[,"RIX_ID"] ==76),"Notes"] <- "Changed death euthanized to 11"
-
-new_lund_line_v2[which(new_lund_line_v2[,"UW_Line"] == 90 & new_lund_line_v2[,"RIX_ID"] ==76),"Data_Altered"] <- "Yes"
-
-new_lund_line_v2[which(new_lund_line_v2[,"UW_Line"] == 90 & new_lund_line_v2[,"RIX_ID"] ==76),"Death_Date"] <- new_lund_line_v2[which(new_lund_line_v2[,"UW_Line"] == 90 & new_lund_line_v2[,"RIX_ID"] ==76),"Date_Infected"]+11
-
-new_lund_line_v2[which(new_lund_line_v2[,"UW_Line"] == 100 & (new_lund_line_v2[,"RIX_ID"] ==82 | new_lund_line_v2[,"RIX_ID"] ==83)),"Death_Euthanized"] <- c(10,9)
-
-new_lund_line_v2[which(new_lund_line_v2[,"UW_Line"] == 100 & (new_lund_line_v2[,"RIX_ID"] ==82 | new_lund_line_v2[,"RIX_ID"] ==83)),"Data_Altered"] <- "Yes"
-
-new_lund_line_v2[which(new_lund_line_v2[,"UW_Line"] == 100 & (new_lund_line_v2[,"RIX_ID"] ==82 | new_lund_line_v2[,"RIX_ID"] ==83)),"Notes"] <- "Changed Death euthanized to one day less"
-
-new_lund_line_v2[which(new_lund_line_v2[,"UW_Line"] == 100 & (new_lund_line_v2[,"RIX_ID"] ==82 | new_lund_line_v2[,"RIX_ID"] ==83)),"Death_Date"] <- new_lund_line_v2[which(new_lund_line_v2[,"UW_Line"] == 100 & (new_lund_line_v2[,"RIX_ID"] ==82 | new_lund_line_v2[,"RIX_ID"] ==83)),"Date_Infected"]+c(10,9)
-
-new_lund_line_v2[which(new_lund_line_v2[,"UW_Line"] == 102 & (new_lund_line_v2[,"RIX_ID"] ==62 | new_lund_line_v2[,"RIX_ID"] ==64)),"D7"] <- c(35.24,35.30)
-
-new_lund_line_v2[which(new_lund_line_v2[,"UW_Line"] == 102 & (new_lund_line_v2[,"RIX_ID"] ==62 | new_lund_line_v2[,"RIX_ID"] ==64)),"Notes"] <- "changed 25.xx to 35.xx"
-
-new_lund_line_v2[which(new_lund_line_v2[,"UW_Line"] == 102 & (new_lund_line_v2[,"RIX_ID"] ==62 | new_lund_line_v2[,"RIX_ID"] ==64)),"Data_Altered"] <- "Yes"
-
-# calculate percentages
-for(i in days[-1]){
-  print(i)
-  d2_p = sapply(1:dim(new_lund_line_v2)[1],function(x){
-    print(x)
-    (diff(c(new_lund_line_v2[x,"D0"], new_lund_line_v2[x,i]))/new_lund_line_v2[x,"D0"])*100
-  })
-  
-  new_lund_line_v2[,paste0(i,"_Percentage")] <- d2_p
-}
-
-# 16. Update Data: Add flags_checked column
+# 15. Update Data: Add flags_checked column
 # Gale: Cumulative data, make sure old lines are the same. Set flag for old ID's that they have already been verified
 # Lund: Need to read in old data and update any overlapping lines and add the new lines. Set flag for old ID's that have already been verified
 # read in full data
@@ -333,3 +265,7 @@ lund_weight_full_v2[which(lund_weight_full_v2[,"flags_checked"]),c("Death_Date_g
 
 # Save cleaned file
 write.table(file="./Lund_Weight_cleaned.txt", x=lund_weight_full_v2, sep="\t", quote=F, row.names=F, na="")
+
+# 16. Make specific alterations listed in the Readme. 
+# Make any manual corrections needed
+# Note if you change weights, need to also re-calculate weight percentages. Record these changes in Data_Altered and Notes column

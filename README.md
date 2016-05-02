@@ -66,8 +66,8 @@ http://church.ohsu.edu:3838/mooneymi/wnv_histology_lineplots/
 13. Order columns according to the data dictionary
 14. Annotate array_exists column
 	Lund: Remove beginning 0 in UW_Line
-15. Make any specific alterations listed below
-16. Update Data: Add flags_checked column
+15. Update Data: Add flags_checked column
+16. Make any specific alterations listed below
 
 ### Specific Weight Data Corrections / Modifications
 
@@ -115,31 +115,19 @@ http://church.ohsu.edu:3838/mooneymi/wnv_pheno_time_series/
 
 ## Clinical Scores Data Cleaning Steps:
 
-Gale Lab
-
 1. Clean mating: "X" changed to "x"
 2. Clean ID
-3. Add Virus, Lab, Data_Altered, and Notes columns
-4. Add Death_Date, Death_Euthanized, Death_FoundInCage, Died_of_Virus, and Died_from_Anesthesia columns from weight data
+3. Add/remove columns and edit column names: Add Lab, Data_Altered, Notes
+	Gale: Add Virus
+	Lund: Add UWID, remove Sex 
+4. Annotate died early columns: Add Death_Date, Death_Euthanized, Death_FoundInCage, Died_of_Virus, and Died_from_Anesthesia columns from weight data
 5. Add Flag_weight_day where Timepoint is >= 3 more than putative death day (day the weights are recorded up to), (internal check)
 6. Add Flag_weight_date where death day > 28, (internal check)
 7. Alter data clinical score = 0 to NA past death day
 8. Order columns according to the data dictionary
-9. Remove line 51
-10. "array_exists" column added to indicate availability of gene expression data
-
-Lund Lab
-
-1. Clean mating: "X" changed to "x"
-2. Clean ID
-3. Add UWID, Lab, Data_Altered, and Notes columns
-4. Remove Sex column
-5. Add Death_Date, Death_Euthanized, Death_FoundInCage, Died_of_Virus, and Died_from_Anesthesia columns from weight data
-6. Add Flag_weight_day where Timepoint is >= 3 more than putative death day (day the weights are recorded up to), (internal check)
-7. Add Flag_weight_date where death day > 28, (internal check)
-8. Alter data clinical score = 0 to NA past death day
-9. Order columns according to the data dictionary
-10. "array_exists" column added to indicate availability of gene expression data
+9. "array_exists" column added to indicate availability of gene expression data
+10. Update Data: Add flags_checked column
+11. Make any specific alterations listed below
 
 ### Specific Clinical Score Data Corrections / Modifications
 
@@ -148,6 +136,7 @@ Gale Lab
 1. Remove line 51
 2. For line 100, changed D2 RIX_IDs from 1 to 7, 2 to 15, and 3 to 20
 3. For line 102, D12 animals swapped infection status
+4. For line 82, clean mating "" to "16557x3154"
 
 Lund Lab
 

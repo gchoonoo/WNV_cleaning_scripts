@@ -145,7 +145,6 @@ Lund Lab
 3. For line 18, mating changed for D21 and D28 animals from 8042x16513 to 18042x16513 to be consistent with flow data
 4. For line 72, death annotations added for animals 54 and 57, since there is no weight data for this line yet
 
-
 ### Cleaned Data Files
 
 1. Gale_Scores_22-Mar-2016_final.xlsx
@@ -157,15 +156,7 @@ http://church.ohsu.edu:3838/mooneymi/wnv_pheno_time_series/
 
 --------------------------------------------------
 
-
 ## qPCR Data Cleaning Steps:
-
-ByMouse Data File
-
-1. Remove 'M' from Time points and convert to numeric values
-2. Change "Condition" column name to "Virus"
-3. Add Group: UW Line, Timepoint, Virus, Tissue, Experiment separated by "_"
-4. Add Data_Altered, Notes, and Lab columns
 
 ByLine Data File
 
@@ -174,9 +165,18 @@ ByLine Data File
 3. Remove 'M' from Time points and convert to numeric values.
 4. Add Group column: UW Line, Timepoint, Virus, Tissue, Experiment separated by "_"
 5. Add Lab column
-6. Add baseline.dCt.sd column (this is the dCt.sd value for the baseline animal)
-7. Add ddCt.se = sqrt(dCt.sd^2/N1 + baseline.dCt.sd^2/N2)
-8. Remove ddCt.sd and fc.sd
+6. Process ByMouse Data File
+	a. Remove 'M' from Time points and convert to numeric values
+	b. Change "Condition" column name to "Virus"
+	c. Add Group: UW Line, Timepoint, Virus, Tissue, Experiment separated by "_"
+	d. Add Data_Altered, Notes, and Lab columns
+	e. Calculate dct mean, N, dct sd, baseline.dct, ddct mean, fc mean and check these are correct in the ByLine Data File
+7. Remove ddCt.sd and fc.sd columns
+8. Add baseline.dCt.sd column (this is the dCt.sd value for the baseline animal)
+9. Add ddCt.se = sqrt(dCt.sd^2/N1 + baseline.dCt.sd^2/N2)
+10. Order columns according to the data dictionary
+11. Update Data
+12. Make any specific alterations listed below
 
 ### Specific qPCR Data Corrections / Modifications
 

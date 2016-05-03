@@ -166,11 +166,11 @@ ByLine Data File
 4. Add Group column: UW Line, Timepoint, Virus, Tissue, Experiment separated by "_"
 5. Add Lab column
 6. Process ByMouse Data File
-	a. Remove 'M' from Time points and convert to numeric values
-	b. Change "Condition" column name to "Virus"
-	c. Add Group: UW Line, Timepoint, Virus, Tissue, Experiment separated by "_"
-	d. Add Data_Altered, Notes, and Lab columns
-	e. Calculate dct mean, N, dct sd, baseline.dct, ddct mean, fc mean and check these are correct in the ByLine Data File
+	* a. Remove 'M' from Time points and convert to numeric values
+	* b. Change "Condition" column name to "Virus"
+	* c. Add Group: UW Line, Timepoint, Virus, Tissue, Experiment separated by "_"
+	* d. Add Data_Altered, Notes, and Lab columns
+	* e. Calculate dct mean, N, dct sd, baseline.dct, ddct mean, fc mean and check these are correct in the ByLine Data File
 7. Remove ddCt.sd and fc.sd columns
 8. Add baseline.dCt.sd column (this is the dCt.sd value for the baseline animal)
 9. Add ddCt.se = sqrt(dCt.sd^2/N1 + baseline.dCt.sd^2/N2)
